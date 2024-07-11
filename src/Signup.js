@@ -1,14 +1,50 @@
 import React, { useState } from "react";
 import { useRef } from "react";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import { checkValidData } from "./utils/validate";
+import { auth } from "./utils/firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { trimFirebaseErrorMessage } from "./utils/trimmessage";
+import { useGoogleLogin } from '@react-oauth/google';
+
 
 
 const Signup = ({ setSign }) => {
-    const [visibility, setVisibility] = useState(true);
+    const [visibility, setVisibility] = useState(false);
     const [isChecked, setIsChecked] = useState(false);
     const email = useRef();
     const password = useRef();
     const username = useRef();
+    const [errorMsg, setErrorMsg] = useState(null);
+
+    const login = useGoogleLogin({
+        onSuccess: tokenResponse => console.log(tokenResponse),
+    });
+
+    const handleButtonClick = () => {
+        // Validate the data
+        const message = checkValidData(email.current.value, password.current.value);
+        setErrorMsg(message);
+
+        if (message) return;
+
+        //Sign Up logic
+        createUserWithEmailAndPassword(auth, email.current.value, password.current.value)
+            .then((userCredential) => {
+                // Signed up 
+                const user = userCredential.user;
+                // ...
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+
+                const trimmedMessage = trimFirebaseErrorMessage(errorMessage);
+                setErrorMsg(trimmedMessage);
+                // ..
+            });
+
+    }
 
     const handleChange = () => {
         setIsChecked(!isChecked); // Update checkbox state on change
@@ -33,7 +69,7 @@ const Signup = ({ setSign }) => {
                 <div className="flex font-semibold text-sm flex-col rounded-md">
                     <label className="text-sm font-normal leading-5">User Name</label>
                     <input
-                        placeholder="Enter Email"
+                        placeholder="Enter Username"
                         ref={username}
                         className=" text-sm font-normal leading-5 outline-none mt-1  text-black border border-gray-400 rounded-md p-2"
                     />
@@ -53,6 +89,7 @@ const Signup = ({ setSign }) => {
                         {visibility ? <FaRegEye /> : <FaRegEyeSlash />}
                     </div>
                 </div>
+                <p className="text-red-500 font-bold text-xs">{errorMsg}</p>
                 <div className="mt-2">
                     <div className="flex items-center ">
                         <input
@@ -73,9 +110,11 @@ const Signup = ({ setSign }) => {
                 </div>
 
                 <div>
-                    <button
+                    <button onClick={handleButtonClick}
                         className={`bg-customOrange w-full rounded-3xl p-2 mt-3 text-white  ${isChecked ? '' : 'cursor-not-allowed'
                             }`}
+                        disabled={!isChecked}
+
                     >
                         Register
                     </button>
@@ -83,16 +122,11 @@ const Signup = ({ setSign }) => {
                 </div>
                 <div className="flex align-middle mt-3">
                     <div className="w-[13vh] font-thin bg-gray-400 h-[0.1px] self-center mr-[8px]"></div>
-                    <span className="text-gray-600 text-sm">Or sign in with</span>
+                    <span className="text-gray-600 text-sm whitespace-nowrap">Or sign in with</span>
                     <div className="w-[13vh] font-thin bg-gray-400 h-[0.1px] self-center ml-[8px]"></div>
                 </div>
                 <div className="flex justify-center align-middle m-2">
-                    <img
-                        width="60px"
-                        height="90px"
-                        className="rounded-full overflow-hidden "
-                        src="https://53.fs1.hubspotusercontent-na1.net/hubfs/53/image8-2.jpg"
-                    />
+                    <button onClick={login}><img width="30px" src="https://cdn1.iconfinder.com/data/icons/google-s-logo/150/Google_Icons-09-512.png" /></button>
                 </div>
 
                 <div className="mt-2 flex justify-center">

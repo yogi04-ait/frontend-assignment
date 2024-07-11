@@ -7,7 +7,7 @@ const Accountaccess = () => {
   const [isSignIn, setIsSignIn] = useState(true);
   const setSign = () => { setIsSignIn(!isSignIn) }
   return (
-    <div className='flex m-auto w-full justify-center h-screen ' >
+    <div className='flex m-auto w-full justify-center h-screen h-full' >
       <div className="absolute ">
         <img
           className='w-screen h-screen'
